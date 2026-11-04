@@ -1,0 +1,254 @@
+name: Fork Windows Release
+
+# Personal-fork publisher for a Windows x64 NSIS installer.
+# Tag prefix `fork-v` does not match the upstream release.yml filter `v*.*.*`,
+# which only accepts vX.Y.Z and vX.Y.Z-rc[.N] after scripts-workflow/release.mjs
+# validate-tag. `v2.5.10+1` is rejected there; `fork-v2.5.10+1` is not.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag matching fork-v* (default fork-v2.5.10+1). Enter auto to use fork-v plus the package.json version.'
+        required: false
+        default: 'fork-v2.5.10+1'
+        type: string
+  push:
+    tags:
+      - 'fork-v*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: short
+  HUSKY: 0
+  TARGET: x86_64-pc-windows-msvc
+
+concurrency:
+  group: fork-windows-release
+  cancel-in-progress: false
+
+jobs:
+  release-windows-x64:
+    name: Windows x64 NSIS
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.1'
+          targets: ${{ env.TARGET }}
+
+      - name: Add Rust target
+        run: rustup target add ${{ env.TARGET }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/dev' }}
+          prefix-key: 'v1-rust'
+          key: 'rust-shared-stable-windows-latest-${{ env.TARGET }}'
+          workspaces: |
+            . -> target
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Install Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26.13.0'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Resolve release tag
+        id: tag
+        shell: bash
+        env:
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          version="$(node --input-type=commonjs -e "process.stdout.write(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")"
+          if [[ ! "$version" =~ ^[0-9A-Za-z.+-]+$ ]]; then
+            echo "::error::Unexpected package.json version: ${version}"
+            exit 1
+          fi
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="${INPUT_RELEASE_TAG}"
+            if [ -z "$tag" ] || [ "$tag" = "auto" ]; then
+              tag="fork-v${version}"
+            fi
+          fi
+          # fork-v* stays off the upstream v*.*.* tag filter. The class rejects
+          # spaces and shell metacharacters so the tag can be passed as one argument.
+          if [[ ! "$tag" =~ ^fork-v[0-9A-Za-z._+-]+$ ]]; then
+            echo "::error::Release tag must look like fork-v2.5.10+1 (got: ${tag}). Upstream tags vX.Y.Z are handled by release.yml, not this workflow."
+            exit 1
+          fi
+          if [ "$tag" != "fork-v${version}" ]; then
+            echo "::notice::Release tag ${tag} differs from package.json version ${version} (fork-v${version}). The installer asset is still named from the package version."
+          fi
+          echo "Resolved release tag ${tag} for package ${version} at ${GITHUB_SHA}"
+          echo "RELEASE_TAG=${tag}" >> "$GITHUB_ENV"
+          echo "PACKAGE_VERSION=${version}" >> "$GITHUB_ENV"
+
+      - name: Pnpm install and prebuild
+        run: |
+          pnpm i
+          pnpm run prebuild ${{ env.TARGET }}
+
+      - name: Add Rust target
+        run: |
+          rustup target add ${{ env.TARGET }} --toolchain 1.99.1 || rustup target add ${{ env.TARGET }}
+          rustup target list --installed
+          echo "Rust target ${{ env.TARGET }} installed."
+
+      - name: Make Tauri updater signing optional
+        id: signing
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          # A whitespace-only secret is treated as missing. The value itself is never printed.
+          if [[ "${TAURI_SIGNING_PRIVATE_KEY}" =~ [^[:space:]] ]]; then
+            echo "signing=true" >> "$GITHUB_OUTPUT"
+            echo "TAURI_PRIVATE_KEY is set. Updater artifacts will be signed."
+            exit 0
+          fi
+          # createUpdaterArtifacts requires TAURI_SIGNING_PRIVATE_KEY when plugins.updater.pubkey
+          # is set. Turning it off for this build still produces the NSIS installer.
+          node --input-type=commonjs <<'EOF'
+          const fs = require('fs');
+          const path = 'src-tauri/tauri.conf.json';
+          const conf = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (!conf.bundle) {
+            throw new Error('src-tauri/tauri.conf.json has no bundle section');
+          }
+          conf.bundle.createUpdaterArtifacts = false;
+          fs.writeFileSync(path, JSON.stringify(conf, null, 2) + '\n');
+          EOF
+          echo "signing=false" >> "$GITHUB_OUTPUT"
+          echo "TAURI_PRIVATE_KEY is not set. Building an unsigned NSIS installer and skipping updater artifacts."
+
+      - name: Tauri build
+        uses: tauri-apps/tauri-action@v1.0.0
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          # No tagName: this step only builds. The next step publishes the release
+          # so a missing signing key cannot fail release creation, and a rerun
+          # can force draft=false on an existing release.
+          tauriScript: pnpm
+          args: --target ${{ env.TARGET }} ${{ steps.signing.outputs.signing == 'false' && '--no-sign' || '' }}
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIGNING: ${{ steps.signing.outputs.signing }}
+        run: |
+          set -euo pipefail
+          bundle="target/${TARGET}/release/bundle/nsis"
+          shopt -s nullglob
+          exes=( "${bundle}"/*setup.exe )
+          if [ "${#exes[@]}" -ne 1 ]; then
+            echo "::error::Expected one NSIS setup exe in ${bundle}, found ${#exes[@]}."
+            ls -la "${bundle}" || true
+            exit 1
+          fi
+          src_exe="${exes[0]}"
+          src_sig="${src_exe}.sig"
+          if [ "${SIGNING}" = "true" ] && [ ! -f "${src_sig}" ]; then
+            echo "::error::TAURI_PRIVATE_KEY was set but ${src_sig} was not produced."
+            exit 1
+          fi
+
+          stage="$(mktemp -d)"
+          asset_exe="${stage}/Clash.Verge_${PACKAGE_VERSION}_x64-setup.exe"
+          cp "${src_exe}" "${asset_exe}"
+          assets=( "${asset_exe}" )
+          if [ -f "${src_sig}" ]; then
+            asset_sig="${asset_exe}.sig"
+            cp "${src_sig}" "${asset_sig}"
+            assets+=( "${asset_sig}" )
+          fi
+          echo "Uploading:"
+          printf ' - %s\n' "${assets[@]}"
+
+          if [ "${SIGNING}" = "true" ]; then
+            signing_note="Tauri updater signature \`.sig\` is attached. This job does not Authenticode-sign the installer."
+          else
+            signing_note="\`TAURI_PRIVATE_KEY\` was not configured, so this installer is unsigned and no \`.sig\` file is attached. Windows SmartScreen may warn before launch."
+          fi
+
+          notes="${stage}/release-notes.md"
+          cat > "${notes}" <<EOF
+          Windows x64 installer for this fork of Clash Verge Rev (package ${PACKAGE_VERSION}).
+
+          This is not an upstream release. Upstream Release Build only accepts tags \`vX.Y.Z\` and \`vX.Y.Z-rc[.N]\`.
+
+          - Installer: \`Clash.Verge_${PACKAGE_VERSION}_x64-setup.exe\`
+          - ${signing_note}
+          - Commit: \`${GITHUB_SHA}\`
+          - Target: \`${TARGET}\`
+
+          Running this workflow again with the same tag replaces the installer and points the tag at the built commit.
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "${RELEASE_TAG}" "${GITHUB_SHA}"
+          git push origin --force "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}" || true
+          remote_sha=""
+          for _ in 1 2 3 4 5 6; do
+            remote_sha="$(git ls-remote origin "refs/tags/${RELEASE_TAG}" | awk '{print $1}')"
+            if [ "${remote_sha}" = "${GITHUB_SHA}" ]; then
+              break
+            fi
+            sleep 2
+          done
+          if [ "${remote_sha}" != "${GITHUB_SHA}" ]; then
+            echo "::error::Could not move ${RELEASE_TAG} to ${GITHUB_SHA} (remote tag is ${remote_sha:-missing})."
+            exit 1
+          fi
+
+          title="Clash Verge Rev ${RELEASE_TAG}"
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" \
+              --draft=false \
+              --prerelease=false \
+              --latest \
+              --title "${title}" \
+              --notes-file "${notes}" \
+              --target "${GITHUB_SHA}"
+            gh release upload "${RELEASE_TAG}" "${assets[@]}" --clobber
+          else
+            gh release create "${RELEASE_TAG}" \
+              --verify-tag \
+              --target "${GITHUB_SHA}" \
+              --latest \
+              --title "${title}" \
+              --notes-file "${notes}" \
+              "${assets[@]}"
+          fi
+
+          url="$(gh release view "${RELEASE_TAG}" --json url --jq .url)"
+          {
+            echo "### Fork Windows release"
+            echo ""
+            echo "Published [${RELEASE_TAG}](${url})."
+            echo ""
+            echo "Download \`Clash.Verge_${PACKAGE_VERSION}_x64-setup.exe\` from that release."
+          } >> "$GITHUB_STEP_SUMMARY"
