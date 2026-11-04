@@ -290,13 +290,15 @@ fn record_connection(ledger: &mut Ledger, connection: &Connection) {
 }
 
 fn classify_route(chains: &[String]) -> Option<Route> {
-    let last = chains.last()?.as_str();
-    if last.eq_ignore_ascii_case("DIRECT") {
+    // mihomo seeds the chain with the real outbound and appends group names
+    // after it, so index 0 is DIRECT / REJECT / the proxy node.
+    let outbound = chains.first()?.as_str();
+    if outbound.eq_ignore_ascii_case("DIRECT") {
         Some(Route::Direct)
-    } else if last.is_empty()
-        || last.eq_ignore_ascii_case("REJECT")
-        || last.eq_ignore_ascii_case("REJECT-DROP")
-        || last.eq_ignore_ascii_case("PASS")
+    } else if outbound.is_empty()
+        || outbound.eq_ignore_ascii_case("REJECT")
+        || outbound.eq_ignore_ascii_case("REJECT-DROP")
+        || outbound.eq_ignore_ascii_case("PASS")
     {
         None
     } else {
