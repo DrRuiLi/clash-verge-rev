@@ -1,3 +1,4 @@
+import DataUsageOutlinedIcon from '@mui/icons-material/DataUsageOutlined'
 import DnsOutlinedIcon from '@mui/icons-material/DnsOutlined'
 import ForkRightOutlinedIcon from '@mui/icons-material/ForkRightOutlined'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
@@ -25,6 +26,7 @@ import ProfilePage from './profiles'
 import ProxyPage from './proxies'
 import RulesPage from './rules'
 import SettingPage from './settings'
+import TrafficPage from './traffic'
 import UnlockPage from './unlock'
 
 type NavigationItem = {
@@ -54,6 +56,14 @@ export const navItems: NavigationItem[] = [
     ...navigationItems.connections,
     icon: [<LanguageOutlinedIcon key="mui" />, <ConnectionsSvg key="svg" />],
     Component: ConnectionsPage,
+  },
+  {
+    ...navigationItems.traffic,
+    icon: [
+      <DataUsageOutlinedIcon key="mui" />,
+      <DataUsageOutlinedIcon key="svg" />,
+    ],
+    Component: TrafficPage,
   },
   {
     ...navigationItems.rules,

@@ -29,6 +29,16 @@
         }
       }
     },
+    "trafficQuota": {
+      "title": "Traffic control",
+      "fields": {
+        "enable": "Daily proxy cap",
+        "limit": "Daily limit"
+      },
+      "tooltips": {
+        "enable": "When today's proxied traffic reaches the limit, system proxy and TUN turn off until local midnight. Direct traffic is not counted."
+      }
+    },
     "proxyControl": {
       "tooltips": {
         "systemProxy": "Системалы прокси көйләүләрен үзгәртү рөхсәтен бирегез. Әгәр рөхсәт алу мөмкин түгел икән, прокси көйләүләрен кулдан үзгәртегез",

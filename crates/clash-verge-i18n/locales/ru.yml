@@ -29,6 +29,9 @@ notifications:
   appQuit:
     title: Скорый выход
     body: Clash Verge скоро завершит работу.
+  trafficQuotaReached:
+    title: Daily proxy cap
+    body: Today's proxied traffic reached the limit. System proxy and TUN were turned off until midnight.
   updateReady:
     title: Обновление Clash Verge
     body: Новая версия (v{version}) скачана и готова к установке.

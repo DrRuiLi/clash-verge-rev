@@ -152,5 +152,24 @@
         "direct": "所有流量不经过代理节点，但经过 Clash 内核转发连接目标服务器，适用于需要通过内核进行分流的特定场景"
       }
     }
+  },
+  "trafficAccount": {
+    "title": "流量",
+    "ranges": {
+      "today": "今日",
+      "week": "本周",
+      "month": "本月"
+    },
+    "proxy": "代理",
+    "direct": "直连",
+    "upload": "上传",
+    "download": "下载",
+    "apps": "应用程序",
+    "unknownApp": "未知",
+    "otherApps": "其他",
+    "empty": "该时段还没有记录到流量。",
+    "quotaReached": "今日代理流量已达上限，系统代理和 TUN 将保持关闭，直到本地午夜。",
+    "quotaRemaining": "今日剩余",
+    "caption": "仅统计 Clash Verge 运行期间观察到的流量，极短连接可能未被计入。"
   }
 }

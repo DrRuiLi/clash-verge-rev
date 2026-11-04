@@ -29,6 +29,16 @@
         }
       }
     },
+    "trafficQuota": {
+      "title": "流量控制",
+      "fields": {
+        "enable": "每日代理上限",
+        "limit": "每日限額"
+      },
+      "tooltips": {
+        "enable": "今日經過代理的流量達到限額後，關閉系統代理和 TUN，直到本地午夜。直連流量不計入。"
+      }
+    },
     "proxyControl": {
       "tooltips": {
         "systemProxy": "修改作業系統的代理設定，如果開啟失敗，可手動修改作業系統的代理設定",

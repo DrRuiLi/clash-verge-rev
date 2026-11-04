@@ -94,6 +94,7 @@ async fn resolve_setup() {
 
     Handle::refresh_clash();
     refresh_tray_menu().await;
+    feat::traffic_quota::start();
     resolve_done();
 }
 

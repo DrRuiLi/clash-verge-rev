@@ -110,6 +110,10 @@ export async function getClashInfo() {
   return commands.getClashInfo()
 }
 
+export async function getTrafficStats() {
+  return commands.getTrafficStats()
+}
+
 // Fallback mode read independent of strict mihomo `/configs` deserialization.
 export async function getClashMode() {
   return commands.getClashMode()

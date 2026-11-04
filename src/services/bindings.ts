@@ -128,6 +128,7 @@ export const commands = {
   /**  修改Verge配置 */
   patchVergeConfig: (payload: IVerge_Deserialize) =>
     __TAURI_INVOKE<null>('patch_verge_config', { payload }),
+  getTrafficStats: () => __TAURI_INVOKE<TrafficStats>('get_traffic_stats'),
   testDelay: (url: string) => __TAURI_INVOKE<number>('test_delay', { url }),
   getAppDir: () => __TAURI_INVOKE<string>('get_app_dir'),
   copyIconFile: (path: string, iconInfo: IconInfo) =>
@@ -432,6 +433,9 @@ export type IVerge_Deserialize = {
   /**  代理页面自动滚动延迟（毫秒） */
   hover_jump_navigator_delay?: number | null
   enable_external_controller?: boolean | null
+  /**  Daily proxied-traffic cap in bytes. `None` or `0` does not enforce a cap. */
+  traffic_quota_bytes?: number | null
+  traffic_quota_enable?: boolean | null
   tray_icon?: string | null
   verge_redir_port?: number | null
   verge_redir_enabled?: boolean | null
@@ -522,6 +526,9 @@ export type IVerge_Serialize = {
   /**  代理页面自动滚动延迟（毫秒） */
   hover_jump_navigator_delay: number | null
   enable_external_controller: boolean | null
+  /**  Daily proxied-traffic cap in bytes. `None` or `0` does not enforce a cap. */
+  traffic_quota_bytes: number | null
+  traffic_quota_enable: boolean | null
   tray_icon?: string | null
   verge_redir_port?: number | null
   verge_redir_enabled?: boolean | null
@@ -994,6 +1001,29 @@ export type SystemProxy = {
 export type ToggleableProxyPort = {
   enabled: boolean
   port: number
+}
+
+export type TrafficAppUsage = {
+  name: string
+  proxy_up: number
+  proxy_down: number
+  direct_up: number
+  direct_down: number
+}
+
+export type TrafficPeriodUsage = {
+  proxy_up: number
+  proxy_down: number
+  direct_up: number
+  direct_down: number
+  apps: TrafficAppUsage[]
+}
+
+export type TrafficStats = {
+  today: TrafficPeriodUsage
+  week: TrafficPeriodUsage
+  month: TrafficPeriodUsage
+  quota_tripped: boolean
 }
 
 export type UnlockItem = {

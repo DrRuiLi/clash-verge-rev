@@ -152,5 +152,24 @@
         "direct": "Bypass the proxy and connect to the internet directly."
       }
     }
+  },
+  "trafficAccount": {
+    "title": "Traffic",
+    "ranges": {
+      "today": "Today",
+      "week": "This week",
+      "month": "This month"
+    },
+    "proxy": "Proxy",
+    "direct": "Direct",
+    "upload": "Upload",
+    "download": "Download",
+    "apps": "Applications",
+    "unknownApp": "Unknown",
+    "otherApps": "Other",
+    "empty": "No traffic recorded for this period yet.",
+    "quotaReached": "Today's proxy cap was reached. System proxy and TUN stay off until local midnight.",
+    "quotaRemaining": "Remaining today",
+    "caption": "Totals include traffic observed while Clash Verge is running. Very short connections can be missed."
   }
 }

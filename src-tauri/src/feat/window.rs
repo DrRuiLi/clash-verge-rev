@@ -134,6 +134,7 @@ pub async fn quit() {
     logging!(debug, Type::System, "启动退出流程");
     // 设置退出标志
     handle::Handle::global().set_is_exiting();
+    super::traffic_quota::flush_and_stop();
 
     Config::apply_all_and_save_file().await;
 

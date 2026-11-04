@@ -19,6 +19,15 @@
        scripts-workflow/group_platforms.sh regroups, --check verifies
      HTML comments are stripped by the update dialog's sanitizer and hidden on
      GitHub, so they never reach users. -->
+## v2.5.10+1
+
+<details>
+<summary><strong> ✨ 新增功能 </strong></summary>
+
+- 新增流量统计与每日代理上限：按日、周、月展示代理和直连用量，超额后关闭系统代理和 TUN
+
+</details>
+
 ## v2.5.10
 
 <details>
