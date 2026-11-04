@@ -18,6 +18,8 @@ pub enum NotificationEvent<'a> {
     LightweightModeEntered,
     ProfilesReactivated,
     AppQuit,
+    /// Today's proxied traffic reached the configured cap.
+    TrafficQuotaReached,
 }
 
 /// Whether no app window can currently show the failure.
@@ -91,6 +93,11 @@ pub async fn notify_event<'a>(event: NotificationEvent<'a>) {
         NotificationEvent::AppQuit => {
             let title = clash_verge_i18n::t!("notifications.appQuit.title");
             let body = clash_verge_i18n::t!("notifications.appQuit.body");
+            notify(title, body);
+        }
+        NotificationEvent::TrafficQuotaReached => {
+            let title = clash_verge_i18n::t!("notifications.trafficQuotaReached.title");
+            let body = clash_verge_i18n::t!("notifications.trafficQuotaReached.body");
             notify(title, body);
         }
     }

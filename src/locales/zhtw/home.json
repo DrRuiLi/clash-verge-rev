@@ -152,5 +152,24 @@
         "direct": "略過代理，直接連線至網際網路。"
       }
     }
+  },
+  "trafficAccount": {
+    "title": "流量",
+    "ranges": {
+      "today": "今日",
+      "week": "本週",
+      "month": "本月"
+    },
+    "proxy": "代理",
+    "direct": "直連",
+    "upload": "上傳",
+    "download": "下載",
+    "apps": "應用程式",
+    "unknownApp": "未知",
+    "otherApps": "其他",
+    "empty": "該時段還沒有記錄到流量。",
+    "quotaReached": "今日代理流量已達上限，系統代理和 TUN 將保持關閉，直到本地午夜。",
+    "quotaRemaining": "今日剩餘",
+    "caption": "僅統計 Clash Verge 執行期間觀察到的流量，極短連線可能未被計入。"
   }
 }

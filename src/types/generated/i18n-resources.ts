@@ -192,6 +192,25 @@ export interface TranslationResources {
           settings: string
         }
       }
+      trafficAccount: {
+        apps: string
+        caption: string
+        direct: string
+        download: string
+        empty: string
+        otherApps: string
+        proxy: string
+        quotaReached: string
+        quotaRemaining: string
+        ranges: {
+          month: string
+          today: string
+          week: string
+        }
+        title: string
+        unknownApp: string
+        upload: string
+      }
     }
     layout: {
       components: {
@@ -212,6 +231,7 @@ export interface TranslationResources {
             proxies: string
             rules: string
             settings: string
+            traffic: string
             unlock: string
           }
         }
@@ -1190,6 +1210,7 @@ export interface TranslationResources {
             autoRoute: string
             device: string
             dnsHijack: string
+            dnsMode: string
             mtu: string
             routeExcludeAddress: string
             stack: string
@@ -1204,6 +1225,7 @@ export interface TranslationResources {
           tooltips: {
             autoRedirect: string
             dnsHijack: string
+            dnsMode: string
           }
         }
         update: {
@@ -1392,6 +1414,16 @@ export interface TranslationResources {
           }
           tooltips: {
             silentStart: string
+          }
+        }
+        trafficQuota: {
+          fields: {
+            enable: string
+            limit: string
+          }
+          title: string
+          tooltips: {
+            enable: string
           }
         }
       }
@@ -1587,6 +1619,7 @@ export interface TranslationResources {
           noDisney: string
           originalsOnly: string
           pending: string
+          risky: string
           unsupportedRegion: string
           yes: string
         }

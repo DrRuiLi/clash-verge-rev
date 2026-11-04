@@ -9,6 +9,7 @@ mod icon;
 mod listener;
 mod profile;
 mod proxy;
+pub mod traffic_quota;
 mod tun;
 mod window;
 

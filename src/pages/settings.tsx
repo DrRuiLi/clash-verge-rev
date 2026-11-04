@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { BasePage } from '@/components/base'
 import SettingClash from '@/components/setting/setting-clash'
 import SettingSystem from '@/components/setting/setting-system'
+import SettingTrafficQuota from '@/components/setting/setting-traffic-quota'
 import SettingVergeAdvanced from '@/components/setting/setting-verge-advanced'
 import SettingVergeBasic from '@/components/setting/setting-verge-basic'
 import { showNotice } from '@/services/notice-service'
@@ -84,6 +85,15 @@ const SettingPage = () => {
             }}
           >
             <SettingSystem onError={onError} />
+          </Box>
+          <Box
+            sx={{
+              borderRadius: 2,
+              marginBottom: 1.5,
+              backgroundColor: isDark ? '#282a36' : '#ffffff',
+            }}
+          >
+            <SettingTrafficQuota onError={onError} />
           </Box>
           <Box
             sx={{

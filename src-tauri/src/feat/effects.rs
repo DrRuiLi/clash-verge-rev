@@ -127,6 +127,8 @@ verge_registry! {
     enable_hover_jump_navigator => NoEffect;
     hover_jump_navigator_delay => NoEffect;
     enable_external_controller => [RestartCore];
+    traffic_quota_bytes => NoEffect;
+    traffic_quota_enable => NoEffect;
 }
 
 pub(super) fn clash_effects(patch: &serde_yaml_ng::Mapping) -> Effects {

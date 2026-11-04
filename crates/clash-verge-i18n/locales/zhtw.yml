@@ -29,6 +29,9 @@ notifications:
   appQuit:
     title: 即將退出
     body: Clash Verge 即將退出。
+  trafficQuotaReached:
+    title: 每日代理上限
+    body: 今日代理流量已達到上限，系統代理和 TUN 已關閉，本地午夜後重新計算。
   updateReady:
     title: Clash Verge 更新
     body: 新版本（v{version}）已下載完成，是否立即安裝？

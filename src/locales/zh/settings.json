@@ -29,6 +29,16 @@
         }
       }
     },
+    "trafficQuota": {
+      "title": "流量控制",
+      "fields": {
+        "enable": "每日代理上限",
+        "limit": "每日限额"
+      },
+      "tooltips": {
+        "enable": "今日经过代理的流量达到限额后，关闭系统代理和 TUN，直到本地午夜。直连流量不计入。"
+      }
+    },
     "proxyControl": {
       "tooltips": {
         "systemProxy": "修改操作系统的代理设置，如果开启失败，可手动修改操作系统的代理设置",
@@ -495,11 +505,13 @@
         "strictRoute": "严格路由",
         "autoDetectInterface": "自动选择流量出口接口",
         "dnsHijack": "DNS 劫持",
+        "dnsMode": "DNS 模式",
         "mtu": "最大传输单元",
         "autoRedirect": "自动重定向"
       },
       "tooltips": {
         "dnsHijack": "多个 DNS 服务器请使用 , 分隔",
+        "dnsMode": "Auto 保持旧行为；hijack 需 Windows 开启严格路由或 Linux 开启自动重定向",
         "autoRedirect": "自动配置 nftables/iptables 的 TCP 重定向"
       },
       "messages": {

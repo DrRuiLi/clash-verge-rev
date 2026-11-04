@@ -224,6 +224,11 @@ pub struct IVerge {
     pub hover_jump_navigator_delay: Option<u64>,
 
     pub enable_external_controller: Option<bool>,
+
+    /// Daily proxied-traffic cap in bytes. `None` or `0` does not enforce a cap.
+    pub traffic_quota_bytes: Option<u64>,
+
+    pub traffic_quota_enable: Option<bool>,
 }
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize, specta::Type)]
@@ -524,6 +529,8 @@ impl IVerge {
         patch!(enable_dns_settings);
         patch!(home_cards);
         patch!(enable_external_controller);
+        patch!(traffic_quota_bytes);
+        patch!(traffic_quota_enable);
     }
 
     pub fn get_log_level(&self) -> LevelFilter {

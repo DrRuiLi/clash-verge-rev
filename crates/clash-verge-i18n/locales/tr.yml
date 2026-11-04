@@ -29,6 +29,9 @@ notifications:
   appQuit:
     title: Çıkış Yapılmak Üzere
     body: Clash Verge kapanmak üzere.
+  trafficQuotaReached:
+    title: Daily proxy cap
+    body: Today's proxied traffic reached the limit. System proxy and TUN were turned off until midnight.
   updateReady:
     title: Clash Verge Güncellemesi
     body: Yeni bir sürüm (v{version}) indirildi ve kurulmaya hazır.
