@@ -387,17 +387,22 @@ pub fn run() -> std::process::ExitCode {
         tauri::RunEvent::Exit => {
             // Windows session ending currently reaches Tao as WM_ENDSESSION and
             // destroys the loop without a preventable ExitRequested event.
-            if !handle::Handle::global().is_exiting() {
+            // Quit flushes traffic stats itself; this covers the session-end path that skips quit.
+            let session_end = !handle::Handle::global().is_exiting();
+            if session_end {
                 handle::Handle::global().set_is_exiting();
-                if let Some(cleanup_result) = feat::clean_session_ending_with_hard_deadline() {
-                    logging!(
-                        info,
-                        Type::System,
-                        "Unpreventable session-ending best-effort cleanup returned - core stopped: {}, all cleanup successful: {}",
-                        cleanup_result.core_stopped,
-                        cleanup_result.all_success
-                    );
-                }
+            }
+            feat::traffic_quota::flush_and_stop();
+            if session_end
+                && let Some(cleanup_result) = feat::clean_session_ending_with_hard_deadline()
+            {
+                logging!(
+                    info,
+                    Type::System,
+                    "Unpreventable session-ending best-effort cleanup returned - core stopped: {}, all cleanup successful: {}",
+                    cleanup_result.core_stopped,
+                    cleanup_result.all_success
+                );
             }
             logging!(info, Type::System, "Application exited");
             crate::core::logger::Logger::global().flush_logs();
