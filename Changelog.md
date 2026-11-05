@@ -19,7 +19,7 @@
        scripts-workflow/group_platforms.sh regroups, --check verifies
      HTML comments are stripped by the update dialog's sanitizer and hidden on
      GitHub, so they never reach users. -->
-## v2.5.10+1
+## v2.5.10+2
 
 <details>
 <summary><strong> 🐞 修复问题 </strong></summary>
@@ -27,6 +27,8 @@
 - 修复升级或重装后流量统计被清空，未勾选删除数据时仍读取旧记录
 
 </details>
+
+## v2.5.10+1
 
 <details>
 <summary><strong> ✨ 新增功能 </strong></summary>

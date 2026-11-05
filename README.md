@@ -116,12 +116,12 @@ or `pnpm dev:sidecar` to force the unprivileged Sidecar workflow.
 
 ## Fork releases
 
-Upstream Release Build only accepts tags `vX.Y.Z` or `vX.Y.Z-rc[.N]`, so this fork cannot publish `2.5.10+1` that way. Windows x64 installers are built by **Fork Windows Release** (`.github/workflows/release-windows-fork.yml`).
+Upstream Release Build only accepts tags `vX.Y.Z` or `vX.Y.Z-rc[.N]`, so this fork cannot publish `2.5.10+2` that way. Windows x64 installers are built by **Fork Windows Release** (`.github/workflows/release-windows-fork.yml`).
 
 1. Merge the workflow onto `dev`.
 2. Open **Actions → Fork Windows Release → Run workflow**.
-3. Choose branch `dev`. Leave the release tag as `fork-v2.5.10+1`, or enter `auto` to use `fork-v` plus the `package.json` version on that commit.
-4. When the run is green, download `Clash.Verge_*_x64-setup.exe` from the GitHub Release it published (for the current package version, `Clash.Verge_2.5.10+1_x64-setup.exe`).
+3. Choose branch `dev`. Leave the release tag as `fork-v2.5.10+2`, or enter `auto` to use `fork-v` plus the `package.json` version on that commit.
+4. When the run is green, download `Clash.Verge_*_x64-setup.exe` from the GitHub Release it published (for the current package version, `Clash.Verge_2.5.10+2_x64-setup.exe`).
 
 Pushing a `fork-v*` tag from `dev` starts the same build. That prefix does not match the upstream `v*.*.*` tag filter. `TAURI_PRIVATE_KEY` and `TAURI_KEY_PASSWORD` are optional; without them the workflow still uploads an unsigned installer and omits the `.sig` file. Windows SmartScreen may warn on an unsigned installer.
 
