@@ -919,7 +919,7 @@ Section Install
   CreateDirectory "$0"
   DetailPrint "Ensured user startup folder exists: $0"
 
-  ; Remove stale window-state files
+  ; Remove stale window-state files. traffic-stats.json is user data and is not deleted here.
   DetailPrint "Removing window-state.json / .window-state.json"
   Delete "$APPDATA\io.github.clash-verge-rev.clash-verge-rev\window-state.json"
   Delete "$APPDATA\io.github.clash-verge-rev.clash-verge-rev\.window-state.json"
@@ -1110,7 +1110,7 @@ Section Uninstall
   !insertmacro CheckAllVergeProcesses
   !insertmacro RemoveVergeService
 
-  ; Remove cached window state files
+  ; Remove cached window state files. traffic-stats.json is user data and is not deleted here.
   DetailPrint "Removing window-state.json / .window-state.json"
   SetShellVarContext current
   Delete "$APPDATA\io.github.clash-verge-rev.clash-verge-rev\window-state.json"
@@ -1291,8 +1291,8 @@ Section Uninstall
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCTNAME}"
   ${EndIf}
 
-  ; Delete app data if the checkbox is selected
-  ; and if not updating
+  ; Delete app data only when the user checked the box and this is not an update.
+  ; traffic-stats.json lives in these directories and is removed only as part of that choice.
   ${If} $DeleteAppDataCheckboxState = 1
   ${AndIf} $UpdateMode <> 1
     ; Clear the install location $INSTDIR from registry
