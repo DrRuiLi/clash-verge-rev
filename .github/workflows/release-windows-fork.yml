@@ -3,14 +3,14 @@ name: Fork Windows Release
 # Personal-fork publisher for a Windows x64 NSIS installer.
 # Tag prefix `fork-v` does not match the upstream release.yml filter `v*.*.*`,
 # which only accepts vX.Y.Z and vX.Y.Z-rc[.N] after scripts-workflow/release.mjs
-# validate-tag. `v2.5.10+1` is rejected there; `fork-v2.5.10+1` is not.
+# validate-tag. `v2.5.10+2` is rejected there; `fork-v2.5.10+2` is not.
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag matching fork-v* (default fork-v2.5.10+1). Enter auto to use fork-v plus the package.json version.'
+        description: 'Release tag matching fork-v* (default fork-v2.5.10+2). Enter auto to use fork-v plus the package.json version.'
         required: false
-        default: 'fork-v2.5.10+1'
+        default: 'fork-v2.5.10+2'
         type: string
   push:
     tags:
@@ -90,7 +90,7 @@ jobs:
           # fork-v* stays off the upstream v*.*.* tag filter. The class rejects
           # spaces and shell metacharacters so the tag can be passed as one argument.
           if [[ ! "$tag" =~ ^fork-v[0-9A-Za-z._+-]+$ ]]; then
-            echo "::error::Release tag must look like fork-v2.5.10+1 (got: ${tag}). Upstream tags vX.Y.Z are handled by release.yml, not this workflow."
+            echo "::error::Release tag must look like fork-v2.5.10+2 (got: ${tag}). Upstream tags vX.Y.Z are handled by release.yml, not this workflow."
             exit 1
           fi
           if [ "$tag" != "fork-v${version}" ]; then
