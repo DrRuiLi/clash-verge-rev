@@ -174,6 +174,42 @@ pub fn is_build_to_stable(current: &str, remote: &str) -> bool {
     !build.is_empty() && !base.contains('-') && base == remote.trim_start_matches('v')
 }
 
+/// `+N` with a plain integer is a fork revision of that release: `2.5.10+1` is
+/// newer than `2.5.10`, and a larger `N` is newer still. Missing metadata is
+/// revision 0. Other metadata (`+autobuild.2406101530`) is not a revision.
+fn numeric_build_revision(version: &str) -> Option<u64> {
+    let version = version.trim().trim_start_matches('v');
+    match version.split_once('+') {
+        None if !version.is_empty() => Some(0),
+        Some((core, build)) if !core.is_empty() && !build.is_empty() && build.bytes().all(|b| b.is_ascii_digit()) => {
+            build.parse().ok()
+        }
+        _ => None,
+    }
+}
+
+/// Whether `remote` should replace `current` when semver ignores build metadata.
+///
+/// Numeric revisions compare against each other. Any other build metadata stays
+/// older than the stable version of the same core, so an autobuild still updates
+/// to the release.
+pub fn same_core_remote_is_newer(current: &str, remote: &str) -> bool {
+    match (numeric_build_revision(current), numeric_build_revision(remote)) {
+        (Some(local_rev), Some(remote_rev)) => remote_rev > local_rev,
+        _ => is_build_to_stable(current, remote),
+    }
+}
+
+fn update_is_newer(current: &str, remote: &str) -> bool {
+    if !version_lte(current, remote) {
+        return false;
+    }
+    if !version_lte(remote, current) {
+        return true;
+    }
+    same_core_remote_is_newer(current, remote)
+}
+
 /// Compares numeric version components after stripping version suffixes.
 fn version_lte(a: &str, b: &str) -> bool {
     let parse = |v: &str| -> Vec<u64> {
@@ -344,7 +380,7 @@ impl SilentUpdater {
 
         let cached_version = &meta.version;
 
-        if !is_build_to_stable(current_version, cached_version) && version_lte(cached_version, current_version) {
+        if !update_is_newer(current_version, cached_version) {
             logging!(
                 info,
                 Type::System,
@@ -693,5 +729,29 @@ impl SilentUpdater {
 
             tokio::time::sleep(std::time::Duration::from_secs(24 * 60 * 60)).await;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{same_core_remote_is_newer, update_is_newer};
+
+    #[test]
+    fn numeric_build_is_newer_than_the_stable_release() {
+        assert!(!update_is_newer("2.5.10+1", "2.5.10"));
+        assert!(!update_is_newer("2.5.10+1", "v2.5.10"));
+        assert!(update_is_newer("2.5.10", "2.5.10+1"));
+        assert!(update_is_newer("2.5.10+1", "2.5.10+2"));
+        assert!(!update_is_newer("2.5.10+2", "2.5.10+1"));
+        assert!(update_is_newer("2.5.10+1", "2.5.11"));
+        assert!(!update_is_newer("2.5.11", "2.5.10+9"));
+        assert!(!same_core_remote_is_newer("2.5.10+1", "2.5.10"));
+    }
+
+    #[test]
+    fn autobuild_still_updates_to_the_stable_release() {
+        assert!(same_core_remote_is_newer("2.5.10+autobuild.2406101530", "2.5.10"));
+        assert!(update_is_newer("2.5.10+autobuild.2406101530", "2.5.10"));
+        assert!(!update_is_newer("2.5.10+1", "2.5.10+autobuild.2406101530"));
     }
 }
