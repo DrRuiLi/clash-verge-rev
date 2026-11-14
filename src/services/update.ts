@@ -41,6 +41,31 @@ const compareVersions = (a: string | null, b: string | null): number | null => {
   }
 }
 
+// `+N` is a fork revision of that release (`2.5.10+1` > `2.5.10`). Other
+// build metadata stays older than the stable version, matching the backend.
+const numericBuildRevision = (version: string | null): number | null => {
+  if (!version) return null
+  const plus = version.indexOf('+')
+  if (plus === -1) return 0
+  const build = version.slice(plus + 1)
+  return /^\d+$/.test(build) ? Number(build) : null
+}
+
+const sameCoreRemoteIsNewer = (
+  local: string | null,
+  remote: string | null,
+): boolean => {
+  const localRevision = numericBuildRevision(local)
+  const remoteRevision = numericBuildRevision(remote)
+  if (localRevision !== null && remoteRevision !== null) {
+    return remoteRevision > localRevision
+  }
+  return (
+    /^\d+\.\d+\.\d+\+[0-9A-Za-z.-]+$/.test(local ?? '') &&
+    remote === local?.split('+')[0]
+  )
+}
+
 const resolveRemoteVersion = (update: Update): string | null => {
   const primary = ensureSemver(update.version)
   if (primary) return primary
@@ -77,12 +102,14 @@ export const checkUpdateSafe = async (
 
   const remoteVersion = resolveRemoteVersion(result)
   const comparison = compareVersions(remoteVersion, localVersionNormalized)
+  const remoteIsNewer =
+    comparison === null
+      ? true
+      : comparison > 0 ||
+        (comparison === 0 &&
+          sameCoreRemoteIsNewer(localVersionNormalized, remoteVersion))
 
-  const isBuildToStable =
-    /^\d+\.\d+\.\d+\+[0-9A-Za-z.-]+$/.test(localVersionNormalized ?? '') &&
-    remoteVersion === localVersionNormalized?.split('+')[0]
-
-  if (comparison !== null && comparison <= 0 && !isBuildToStable) {
+  if (!remoteIsNewer) {
     try {
       await result.close()
     } catch (err) {

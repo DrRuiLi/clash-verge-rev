@@ -19,6 +19,15 @@
        scripts-workflow/group_platforms.sh regroups, --check verifies
      HTML comments are stripped by the update dialog's sanitizer and hidden on
      GitHub, so they never reach users. -->
+## v2.5.10+3
+
+<details>
+<summary><strong> 🐞 修复问题 </strong></summary>
+
+- 修复 `2.5.10+N` 检查更新时把 `2.5.10` 提示为新版本
+
+</details>
+
 ## v2.5.10+2
 
 <details>
